@@ -1,7 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'dart:developer' as devtools show log;
-
 import 'package:mynotes/constants/route.dart';
 import 'package:mynotes/utilities/show_error_dialog.dart';
 
@@ -62,17 +60,27 @@ class _LoginViewState extends State<LoginView> {
                   await FirebaseAuth.instance.signInWithEmailAndPassword(
                       email: email, password: password);
 
-                  Navigator.of(context).restorablePushNamedAndRemoveUntil(
-                    notesRoute,
-                    (route) => false,
-                  );
+                  // Navigator.of(context).restorablePushNamedAndRemoveUntil(
+                  //   notesRoute,
+                  //   (route) => false,
+                  // );
+                  if (FirebaseAuth.instance.currentUser?.emailVerified ==
+                      true) {
+                    Navigator.of(context)
+                        .pushNamedAndRemoveUntil(notesRoute, (route) => false);
+                  } else {
+                    Navigator.of(context).pushNamed(
+                      verifyEmailRoute,
+                    );
+                  }
+                  ;
                 } on FirebaseAuthException catch (e) {
                   if (e.code == 'unknown') {
                     await showErrorDialog(
                         context, 'You need to fil all blanks!');
                   } else {
-                    await showErrorDialog(context,
-                        "${e.code.replaceAll('-', ' ').toUpperCase()}");
+                    await showErrorDialog(
+                        context, e.code.replaceAll('-', ' ').toUpperCase());
                   }
                 } catch (e) {
                   await showErrorDialog(context, "What happen ?: $e.toString");
