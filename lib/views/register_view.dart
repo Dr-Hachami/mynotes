@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:developer' as devtools show log;
 
 import 'package:mynotes/constants/route.dart';
+import 'package:mynotes/utilities/show_error_dialog.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -63,8 +64,15 @@ class _RegisterViewState extends State<RegisterView> {
                           email: email, password: password);
                   devtools.log(userCredential.toString());
                 } on FirebaseAuthException catch (e) {
-                  devtools
-                      .log("What happen ?: >>  ${e.code.replaceAll('-', ' ')}");
+                  if (e.code == 'unknown') {
+                    await showErrorDialog(
+                        context, 'You need to fil all blanks!');
+                  } else {
+                    await showErrorDialog(context,
+                        "${e.code.replaceAll('-', ' ').toUpperCase()}");
+                  }
+                } catch (e) {
+                  await showErrorDialog(context, "What happen ?: $e.toString");
                 }
               },
               child: const Text("Register")),

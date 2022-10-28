@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:developer' as devtools show log;
 
 import 'package:mynotes/constants/route.dart';
+import 'package:mynotes/utilities/show_error_dialog.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -58,20 +59,23 @@ class _LoginViewState extends State<LoginView> {
                 final email = _email.text;
                 final password = _password.text;
                 try {
-                  final userCredential = await FirebaseAuth.instance
-                      .signInWithEmailAndPassword(
-                          email: email, password: password);
-                  if (userCredential.user?.isAnonymous == false) {
-                    Navigator.of(context).restorablePushNamedAndRemoveUntil(
-                      notesRoute,
-                      (route) => false,
-                    );
-                  }
-                  //devtools.log(userCredential.toString());
+                  await FirebaseAuth.instance.signInWithEmailAndPassword(
+                      email: email, password: password);
 
+                  Navigator.of(context).restorablePushNamedAndRemoveUntil(
+                    notesRoute,
+                    (route) => false,
+                  );
                 } on FirebaseAuthException catch (e) {
-                  devtools
-                      .log("What happen ?: >>  ${e.code.replaceAll('-', ' ')}");
+                  if (e.code == 'unknown') {
+                    await showErrorDialog(
+                        context, 'You need to fil all blanks!');
+                  } else {
+                    await showErrorDialog(context,
+                        "${e.code.replaceAll('-', ' ').toUpperCase()}");
+                  }
+                } catch (e) {
+                  await showErrorDialog(context, "What happen ?: $e.toString");
                 }
               },
               child: const Text("Login")),
